@@ -11,3 +11,6 @@ https://www.typescriptlang.org/ko/docs/handbook/typescript-in-5-minutes.html
 ### TypeScript HandBook
 1. The Basics
 https://www.typescriptlang.org/docs/handbook/2/basic-types.html
+
+2. Everyday Types
+https://www.typescriptlang.org/ko/docs/handbook/2/everyday-types.html
