@@ -398,7 +398,7 @@ if(sonmeCondition){
 */
 
 function doSomething(x: string | undefined){
-    if(x === undeined){
+    if(x === undefined){
         // nothing
     }else{
         console.log("Hello, ", x?.toUpperCase());
@@ -410,7 +410,7 @@ function doSomething(x: string | undefined){
     TypeScript에서는 명시적 검사를 하지 않고도 타입에서 null 과 undefined를 제거할 수 있는 특별한 구문을 제공합니다.
     표현식 뒤에 !를 작성하면 해당 값이 null 또는 undefined가 아니라고 타입 단언하는 것입니다.
 */
-function liveDangerously(x?: unuber | undefined){{
+function liveDangerously(x?: number | undefined){{
     // 오류 없음
     console.log(x!.toFixed());
 }}
