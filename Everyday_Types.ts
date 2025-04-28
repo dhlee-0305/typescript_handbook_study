@@ -384,7 +384,60 @@ if(sonmeCondition){
 
 /*
     ### null 과 undeinded
-    https://www.typescriptlang.org/ko/docs/handbook/2/everyday-types.html#null%EA%B3%BC-undefined
+    JavaScript에는 빈 값 또는 초기화되지 않은 값을 가리키는 두 가지 원시값이 존재합니다. 바로 null과 undefined입니다.
+    TypeScript에는 각 값에 대응하는 동일한 이름의 두 가지 타입이 존재합니다. 각 타입의 동작 방식은 stricNullChecks 옵션의 설정 여부에 따라 달라집니다.
 
+    strictNullChecks가 설정되지 않았을 때
+    strictNullChecks가 설정되지 않았다면, 어떤 값이 null 또는 undefined 일 수 있더라도 해당 값에 평소와 같이 접근할 수 있으며,
+    null 과 undefined는 모든 타입의 변수에 대입될 수 있습니다. 이는 Null 검사를 하지 않는 언어(C#, Java 등)의 동작 방식과 유사합니다.
+    Null 검사의 부재는 버그의 주요 원인이 되기도 합니다. 별다른 이유가 없다면, 코드 전반에 걸쳐 strictNullChecks 옵션을 설정하는 것을 항상 권장합니다.
+
+    strictNullChecks 설정되었을 때
+    strictNullChecks가 설정되었다면, 어떤 값이 null 또는 undefined 일 때, 해당 값과 함께 메서드 또는 프로퍼티를 사용하기 앞서 해당 값을 테스트해야 합니다.
+    옵셔널 프로퍼티를 사용하기에 앞서 undeined 여부를 검사하는 것과 마찬가지로, 좁히기를 통해 null 일 수 있는 값에 대한 검사를 수행할 수 있습니다.
 */
 
+function doSomething(x: string | undefined){
+    if(x === undeined){
+        // nothing
+    }else{
+        console.log("Hello, ", x?.toUpperCase());
+    }
+}
+
+/*
+    Null 아님 단언 연산자 (접미사 !)
+    TypeScript에서는 명시적 검사를 하지 않고도 타입에서 null 과 undefined를 제거할 수 있는 특별한 구문을 제공합니다.
+    표현식 뒤에 !를 작성하면 해당 값이 null 또는 undefined가 아니라고 타입 단언하는 것입니다.
+*/
+function liveDangerously(x?: unuber | undefined){{
+    // 오류 없음
+    console.log(x!.toFixed());
+}}
+// 다른 타입 단언과 마찬가지로 이 구문은 코드의 런타임 동작을 변화시키지 않으므로, ! 연산자는 반드시 해당 값이 null 또는 undefined가 아닌 경우에만 사용해야 합니다.
+
+/*
+    ### 열거협
+    열거형은 TypeScript가 JavaScript에 추가하는 기능으로, 어떤 값이 이름이 있는 상수 집합에 속한 값 중 하나일 수 있도록 제한하는 기능입니다.
+    대부분의 TypeScript 기능과 달리, 이 기능은 JavaScript에 타입 수준이 아닌, 언어와 런타임 수준에 추가되는 기능입니다.
+    따라서 열거형이 무엇인지 알 필요가 있겠으나, 그 사용법이 명확하게 파악하지 않았다면 실제 사용은 보류하는 것이 좋습니다.
+    
+    ### 자주 사용되지 않는  원시형 타입
+
+    bigint
+    ES2020 이후, 아주 큰 정수를 다루기 위한 원시 타입이 JavaScript에 추가되었습니다. 바로 bigint입니다.
+*/
+const oneHundred:bigint = BigInt(100);  // BigInt 함수를 통해 bigint 값을 생성
+const anotherHundred: bigint = 100n;    // 리터럴 구문을 통하여 bigint 값을 생성
+/*
+    Symbol
+    symbol은 전역적으로 고유한 참조값을 생성하는 데에 사용할 수 있는 원시 타입이며, Symbol() 함수를 통하여 생성할 수 있습니다.
+
+const firstName = Symbol("name");
+const secondName = Symbol("name");
+
+if(firstName === secondName)){
+    // 절대로 일어날 수 없음
+    // Error = This comparison appears to be unintentional because the types 'typeof firstName' and 'typeof secondName' have no overlap.
+}
+*/
