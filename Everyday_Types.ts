@@ -1,4 +1,4 @@
-
+export {};
 /*
     ### 원시 타입
     - stirng은 "hellow world"와 같은 문자열을 나타냅니다.
