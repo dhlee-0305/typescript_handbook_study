@@ -18,3 +18,6 @@ https://www.typescriptlang.org/ko/docs/handbook/2/everyday-types.html
 3. Narrowing - 영문 only
 https://www.typescriptlang.org/docs/handbook/2/narrowing.html
 번역 : https://vriz.notion.site/3-Narrowing-2f5d24b0542648b1a4ad2de99c61a657
+
+4. More on Functions
+https://www.typescriptlang.org/ko/docs/handbook/2/functions.html
