@@ -361,4 +361,215 @@ console.log(d2);
 
 /*
     좋은 오버로드 작성하기
+    가능하다면 오버로드 대신 유니온 타입을 사용하십시오.
+*/
+
+/*
+    함수 내에서 this 선언하기
+    TypeScript는 함수 안에서 this가 무엇이 되어야 할지, 코드 흐름 분석을 통해서 추론합니다.
+*/
+const user = {
+    id: 123,
+
+    admin: false,
+    becomeAdmin: function(){
+        this.admin = true;
+    },
+}
+/*
+    TypeScript는 함수 user.becomeAdmin이 외부 객체 user에 상응하는 this를 가지고 있다고 이해합니다.
+    보통 이걸로 충분할 수 있습니다만, this 객체가 표현하는 것에 대해서 더 많은 통제가 필요한 경우가 많을 겁ㄴ디ㅏ.
+    JavaScript 명세에서는 this라는 이름의 매개변수를 가질 수 없다고 나와 있기에, TypeScript는 해당 문법 공간을 함수 본문에서 this의 타입을 정의하는데 사용하도록 허락해줍니다.
+
+interface DB{
+    filterUsers(filter: (this: User) => boolean): User[];
+}
+const db = getDB();
+const admins = db.filterUsers(function(this: User){
+    return this.admin;
+});
+
+    이 패턴은 일반적으로 다른 객체가 함수를 호출할 때 제어하는 콜백 스타일 API에서 흔히 사용됩니다.
+    이런 효과를얻기 위해서는 화살표 함수가 아닌 function 키워드를 사용해야 합니다.
+
+interface DB{
+    filterUsers(filter: (this: User) => boolean): User[];
+}
+const db = getDB();
+const admins = db.filterUsers(() => this.admin);    // error - The containing arrow function captures the global value of 'this'.
+                                                    //Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature.
+*/
+
+/*
+    ### 알아야 할 다른 타입
+    함수 타입에 대해서 작업을 할 때, 자주 나타나는 몇 가지 추가 타입들이 있습니다.
+    모든 타입처럼, 이 타입들을 어디서나 사용하실 수 있습니다.
+    이 타입들을 특별히 함수라는 맥락에 관련이 깊습ㄴ디ㅏ.
+
+    void
+    void는 값을 반환하지 않는 함수의 반환 값을 의미합니다.
+    함수에 return 문이 없거나, 명시적으로 값을 반환하지 않을 때, 추론되는 타입입니다.
+*/
+function nooop(){   // 추론된 반환 타입은 void입니다.
+    return; 
+}
+/*
+    JavaScript에서는, 아무것도 반환하지 않느 함수는 암묵적으로 undefined 값을 반환합니다.
+    하지만 TypeScript에서 void와 undefined는 같은 것으로 간주되지 않습니다.
+
+    object
+    특별한 타입 object는 원시 값(string, number, bigint, boolean, symbol, null, undefined)이 아닌 모든 값을 지정합니다.
+    이것은 빈 객체 타입 {}와는 다르고, 전역 타입 Object와도 다릅니다. 아마도 여러분은 Obnject를 사용할 일이 없을 것입니다.
+    object는 Object가 아닙니다...항상 object를 사용하십시오.
+    JavaScript에서 함수 값은 객체입니다. 프로퍼티가 있고, 프로토타입 체인에 Object.prototype가 있고, instanceof Object이면서, Object.keys를 호출할 수 있고, 기타 등등이 있습니다.
+    이러한 이유로 TypeScript에서 함수 타입은 object로 간주됩니다.
+
+    unknown
+    unknown 타입은 모든 값을 나타냅니다. any 타입과 유사합니다만, unknown 타입에 어떤 것을 대입하는 것이 유효하지 않기 때문에 더 안전합니다.
+
+function f1(a: any){
+    a.b(); // ok
+}
+function f2(a: unknown){
+    a.b(); // 'a' is of type 'unknown'
+}
+
+    이는 any 형태의 값을 함수 본문에 사용하지 않고도, 아무 값이나 받는 함수를 표현할 수 있기 때문에, 함수 타입을 설명하는데에 유용하게 쓰입니다.
+    반대로, unknown 타입의 값을 반환하는 함수를 표현할 수 있습니다.
+*/
+
+function safeParse(s: string): unknown{
+    return JSON.parse(s);
+}
+
+// 'object'를 사용할 때 조심해야 합니다.
+// const obj = safeParse(someRandomString);
+
+/*
+    never
+    어떤 함수는 결코(never) 값을 반환하지 않습니다.
+*/
+function fail(msg: string): never{
+    throw new Error(msg);
+}
+/*
+    never 타입은 결코 관측될 수 없는 값을 의미합니다. 
+    반환 타입에서는, 해당 함수가 예외를 발생시키거나, 프로그램 실행을 종료함을 의미합니다.
+    never는 TypeScript가 유니온에 아무것도 남아있지 않다고 판단했을 때 또한 나타납니다.
+*/
+function fn(x: string | number){
+    if( typeof x === "string" ){
+        // do something
+    }else if( typeof x === "number"){
+        // do something else
+    }else{
+        x; // 'never' 타입이 됨
+    }
+}
+/*
+    Function
+    전역 타입 Function은 bind, call, apply 그리고 JavaScript 함수 값에 있는 다른 프로퍼티를 설명하는 데에 사용되니다.
+    또한 여기에는 Function 타입의 값은 언제나 호출될 수 있다는 값을 가지며, 이러한 호출은 any를 반환합니다.
+*/
+function doSomethign(f: Function){
+    return f(1, 2, 3);
+}
+/*
+    이는 타입되지 않은 함수 호출이며, 안전하지 않은 any 타입을 반환하기에 일반적으로 피하는 것이 가장 좋습니다.
+    만약 임의의 함수를 허용해야 하지만, 호출할 생각이 없다면 () => void 타입이 일반적으로 더 안전합니다.
+*/
+
+/*
+    ### 나머지 매개변수와 인수
+    
+    나머지 매개변수(Rest Parameter)
+    선택적 매개변수와 오버로드를 사용하여 다양한 정해진 인수를 받아들일 수 있지만, 우리는 정해지지 않은 수의 인수를 받아들이는 함수를 나머지 매개변수를 이용하여 정의할 수 있습니다.
+    나머지 매개변수는 다른 모든 매개변수 뒤에 나타나며 ... 구문을 사용합니다.
+*/
+function multiply(n: number, ...m: number[]){
+    return m.map((x) => n * x);
+}
+const multi = multiply(10, 1, 2, 3, 4);
+console.log(multi);
+/*
+    TypeScript에서는, 이러한 매개변수에 대한 타입 표기는 암묵적으로 any가 아닌 any[]를 사용하며,
+    타입 표션식은 Array<T> 또는 T[] 또는 튜플 타입으로 표현해야 합니다.
+
+    나머지 인수(Rest Argument)
+    반대로 전개 구문을 사용하여 배열에서 제공되는 인수의 개수를 구할 수 있습니다.
+    예를 들어, push 메서드는 인수를 몇 개든 받을 수 있습니다.
+*/
+const arr10 = [1, 2, 3];
+const arr20 = [4, 5, 6];
+arr10.push(...arr20);
+console.log(arr10);
+/*
+    일반적으로 TypeScript는 배열이 불변하다고 간주하지 않습니다.
+    이로 인해 다음과 같은 놀라운 동작이 발생할 수 있습니다.
+*/
+
+// 추론된 타입은 0개 이상의 숫자를 가지는 배열인 number[]
+// 명시적으로 2개의 숫자를 가지는 배열로 간주되지 않습니다.
+const args = [8, 5];
+//const angle = Math.atan2(...args); // error - A spread argument must either have a tuple type or be passed to a rest parameter.ts(2556)
+
+// 이러한 상황의 최선의 해결책은 코드에 따라 다르지만, 일반적으로 const 콘텍스트가 가장 간단한 해결책입니다.
+// 길이가 2인 튜플로 추론됨
+const args2 = [8, 5] as const;
+const angle = Math.atan2(...args2); // ok
+// 나머지 인수를 사용하는 것은 오래된 런타임을 대상으로 할 때, downlevelIteration을 필요로 할 수 있습니다.
+
+/*
+    ### 매개변수 구조 분해(Parameter Destructing)
+    매개변수 분해를 사용하여 인수로 제공된 객체를 함수 본문에서 하나 이상의 지역 변수로 편리하게 언팩할 수 있습니다.
+    JavaScript에서는 아래의 형태처럼 생겼습니다.
+*/
+function sum({a, b, c}){
+    console.log(a + b + c);
+}
+sum({a: 10, b: 3, c: 9});
+
+// 객체를 위한 타입 표기는 구문 뒤에 위치하게 됩니다.
+function sum2({a, c, b}: {a: number, b: number, c: number}){
+    console.log(a+b+c);
+}
+// 약간 장황하게 느껴질 수 있지만, 여기에서도 이름 붙은 타입을 사용할 수 있습니다.
+type ABC = {a: number, b: number, c: number};
+function sum3({a, b, c}: ABC){
+    console.log(a+b+c);
+}
+
+/*
+    ### 함수의 할당 가능성
+    void 반환 타입
+    함수의 void 반환 타입은 몇몇 일반적이지는 않지만 예측할 수 있는 동작을 발생시킬 수 있습니다.
+    void 반환 타입으로의 문맥적 타이핑은 함수를 아무것도 반환하지 않도록 강제하지 않습니다.
+    이를 설명하는 또 다른 방법은, void 반환타입을 가지는 문맥적 함수 타입(type vf = () => void)가 구현되었을 때, 아무값이나 반환될 수 있지만, 무시됩니다.
+    그러므로 호술할 타입 () => void의 구현들은 모두 유효합니다.
+*/
+type voidFunc = () => void;
+const f10: voidFunc = () => {
+    return true;
+}
+const f20: voidFunc = () => true;
+const f30: voidFunc = function (){
+    return true;
+}
+// 그리고 이러한 함수의 반환값이 다른 변수에 할당될 때, 이들은 여전히 void 타입을 유지할 것입니다.
+const v1 = f10();
+const v2 = f20();
+const v3 = f30();
+// 이러한 동작이 존재하기에, Array.prototype.push가 number를 반환하고, Array.prototype.forEach 메서드가 void 반환 타입을 가지는 함수를 예상함에도 다음 코드는 유효할 수 있습니다.
+const src = [1, 2, 3];
+const dst = [0];
+src.forEach((el) => dst.push(el));
+
+/*
+    유의해야 할 한 가지 다른 경우가 있습니다. 리터럴 함수 정의가 void 반환 값을 가지고 있다면, 그 함수는 어떠한 것도 반환해서는 안됩니다.
+    function f2(): void{
+        return true // error
+    }
+    const f3 = function(): void {
+        return true; // error
+    }
 */
