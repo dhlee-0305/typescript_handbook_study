@@ -506,7 +506,7 @@ const c: BooelansStringNumber = [false, true, false, 'baby', 3];
     이 방식을 통해, TypeScript로 하여금 매개변수 목록과 튜플을 대응시킬 수 있게 해준다.
     튜플 타입은 다음과 같이 나머지 매개변수와 인수에서도 사용할 수 있다.
 */
-function readButtonInput(...args: [string, number, ...booleans[]]){
+function readButtonInput(...args: [string, number, ...boolean[]]){
     const [name, version, ...input] = args;
     //...
 }
